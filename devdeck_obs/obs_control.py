@@ -42,11 +42,13 @@ class OBSControl(DeckControl):
         self.loop.create_task(self._update_display(True))
 
     def _scene_switched(self, event):
-        self.active = (event.datain["scene-name"] == self.scene_name)
+        self.active = event.datain["scene-name"] == self.scene_name
 
     def _update_active(self):
         try:
-            self.active = self.obs.call(requests.GetCurrentScene()).getName() == self.scene_name
+            self.active = (
+                self.obs.call(requests.GetCurrentScene()).getName() == self.scene_name
+            )
         except:
             self.active = False
 
@@ -64,11 +66,4 @@ class OBSControl(DeckControl):
             await sleep(0.1)
 
     def settings_schema(self):
-        return {
-            'scene_name': {
-                'type': 'string'
-            },
-            'emoji': {
-                'type': 'string'
-            }
-        }
+        return {"scene_name": {"type": "string"}, "emoji": {"type": "string"}}

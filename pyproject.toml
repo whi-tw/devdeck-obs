@@ -1,7 +1,8 @@
 [tool.poetry]
 name = "devdeck-obs"
-version = "0.1.0"
-description = ""
+version = "0.1.2"
+description = "OBS support for DevDeck"
+readme = "README.md"
 authors = ["Tom Whitwell <tom@whi.tw>"]
 
 [tool.poetry.dependencies]
