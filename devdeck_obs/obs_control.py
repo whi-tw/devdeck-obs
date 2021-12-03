@@ -29,41 +29,39 @@ class OBSControl(DeckControl):
     def initialize(self):
         try:
             self.obs.connect()
+            self._update_active()
+            self.loop.create_task(self._update_display())
+            self.obs.register(self._scene_switched, events.SwitchScenes)
         except ConnectionFailure:
-            self.loop.create_task(self._update_display(True))
-        self.obs.register(self._scene_switched, events.SwitchScenes)
+            self.loop.create_task(self._update_display())
         self.loop.create_task(self._connection_watcher())
-        self._update_active()
-        self.loop.create_task(self._update_display())
 
     def pressed(self):
         self.obs.call(requests.SetCurrentScene(self.scene_name))
         self.active = True
-        self.loop.create_task(self._update_display(True))
+        self.loop.create_task(self._update_display())
 
     def _scene_switched(self, event):
         self.active = event.datain["scene-name"] == self.scene_name
+        self.loop.create_task(self._update_display())
 
     def _update_active(self):
         try:
             self.active = (
                 self.obs.call(requests.GetCurrentScene()).getName() == self.scene_name
             )
+
         except:
             self.active = False
 
-    async def _update_display(self, once=False):
-        while True:
-            color = "green" if self.active else "red"
-            if not self.obs.ws.connected:
-                color = "grey"
-            with self.deck_context() as context:
-                with context.renderer() as r:
-                    r.emoji(self.settings["emoji"]).end()
-                    r.colorize(color)
-            if once:
-                return
-            await sleep(0.1)
+    async def _update_display(self):
+        color = "green" if self.active else "red"
+        if not self.obs.ws.connected:
+            color = "grey"
+        with self.deck_context() as context:
+            with context.renderer() as r:
+                r.emoji(self.settings["emoji"]).end()
+                r.colorize(color)
 
     def settings_schema(self):
         return {"scene_name": {"type": "string"}, "emoji": {"type": "string"}}
